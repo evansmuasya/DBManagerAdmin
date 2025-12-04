@@ -14,6 +14,7 @@ import com.lewvitec.shoppingadmin.ui.products.ProductsAdapter
 import com.lewvitec.shoppingadmin.ui.products.edit.EditProductActivity
 import com.lewvitec.shoppingadmin.utils.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LowStockProductsActivity : AppCompatActivity() {
@@ -22,6 +23,9 @@ class LowStockProductsActivity : AppCompatActivity() {
     private val viewModel: LowStockProductsViewModel by viewModels()
     private lateinit var pref: PreferenceManager
     private lateinit var adapter: ProductsAdapter
+
+    @Inject
+    lateinit var tenantManager: com.lewvitec.shoppingadmin.utils.TenantManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +53,7 @@ class LowStockProductsActivity : AppCompatActivity() {
     }
 
     private fun setupRecycler() {
+        val tenantId = tenantManager.getCurrentTenantId()
         adapter = ProductsAdapter(
             onEdit = { product ->
                 val intent = Intent(this, EditProductActivity::class.java)
@@ -57,7 +62,8 @@ class LowStockProductsActivity : AppCompatActivity() {
             },
             onDelete = { product ->
                 confirmDelete(product.id, product.productName)
-            }
+            },
+            tenantId = tenantId // Add tenantId parameter
         )
 
         binding.recyclerViewProducts.layoutManager = LinearLayoutManager(this)
