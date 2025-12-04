@@ -36,6 +36,7 @@ class SubscriptionViewModel @Inject constructor(
             _error.value = null
 
             try {
+                // Load subscription plans
                 val plansResult = repository.getSubscriptionPlans(sessionId)
                 plansResult.onSuccess { plansList ->
                     _plans.value = plansList
@@ -49,6 +50,9 @@ class SubscriptionViewModel @Inject constructor(
                     val subscriptionResult = repository.getTenantSubscription(sessionId, tenantId)
                     subscriptionResult.onSuccess { subscription ->
                         _currentSubscription.value = subscription
+                    }.onFailure {
+                        // It's okay if no subscription exists
+                        _currentSubscription.value = null
                     }
                 }
             } catch (e: Exception) {
@@ -57,5 +61,9 @@ class SubscriptionViewModel @Inject constructor(
                 _loading.value = false
             }
         }
+    }
+
+    fun clearError() {
+        _error.value = null
     }
 }

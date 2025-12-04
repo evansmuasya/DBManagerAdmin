@@ -36,7 +36,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
                     app:cardBackgroundColor="?attr/colorPrimaryContainer"
-                    app:cardCornerRadius="12dp">
+                    app:cardCornerRadius="12dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -98,19 +99,15 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp" />
 
-                <!-- Payment History -->
-                <TextView
+                <!-- Subscribe Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSubscribe"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Payment History"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="16dp" />
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvPaymentHistory"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
+                    android:layout_marginTop="16dp"
+                    android:text="Subscribe Now"
+                    android:textSize="16sp"
+                    app:cornerRadius="8dp" />
 
                 <!-- Empty State -->
                 <LinearLayout

@@ -97,8 +97,10 @@ class PaymentViewModel @Inject constructor(
         pollingJob?.cancel()
 
         pollingJob = viewModelScope.launch {
-            repeat(30) { attempt ->
+            var attempts = 0
+            while (attempts < 30) {
                 delay(10000) // Every 10 seconds
+                attempts++
 
                 val sessionId = preferenceManager.getSessionId()
                 val result = repository.checkMpesaPaymentStatus(sessionId, checkoutRequestId)
@@ -117,11 +119,19 @@ class PaymentViewModel @Inject constructor(
                         }
                     }
                 }
+
+                if (pollingJob?.isCancelled == true) {
+                    return@launch
+                }
             }
 
             // If polling ends without success
             _paymentStatus.value = "timeout"
         }
+    }
+
+    fun cancelPolling() {
+        pollingJob?.cancel()
     }
 
     override fun onCleared() {
