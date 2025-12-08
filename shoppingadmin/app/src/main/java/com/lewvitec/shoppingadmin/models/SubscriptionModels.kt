@@ -153,3 +153,15 @@ data class PaymentStatusResponse(
     @SerializedName("transaction_id")
     val transactionId: String? = null
 )
+
+data class SubscriptionStatus(
+    val success: Boolean,
+    val message: String,
+    val status: String? = null, // active, expired, pending, etc.
+    @SerializedName("subscription_id")
+    val subscriptionId: Int? = null,
+    @SerializedName("plan_id")
+    val planId: Int? = null,
+    @SerializedName("current_period_end")
+    val currentPeriodEnd: String? = null
+)

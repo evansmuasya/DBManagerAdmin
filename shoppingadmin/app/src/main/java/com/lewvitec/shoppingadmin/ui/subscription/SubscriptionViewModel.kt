@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.lewvitec.shoppingadmin.models.SubscriptionPlan
 import com.lewvitec.shoppingadmin.models.TenantSubscription
 import com.lewvitec.shoppingadmin.repository.AdminRepository
+import com.lewvitec.shoppingadmin.repository.Result
 import com.lewvitec.shoppingadmin.utils.TenantManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -18,16 +19,16 @@ class SubscriptionViewModel @Inject constructor(
     private val tenantManager: TenantManager
 ) : ViewModel() {
 
-    private val _plans = MutableLiveData<List<SubscriptionPlan>>()
-    val plans: LiveData<List<SubscriptionPlan>> = _plans
+    private val _plans = MutableLiveData<List<SubscriptionPlan>?>(null)
+    val plans: LiveData<List<SubscriptionPlan>?> = _plans
 
-    private val _currentSubscription = MutableLiveData<TenantSubscription?>()
+    private val _currentSubscription = MutableLiveData<TenantSubscription?>(null)
     val currentSubscription: LiveData<TenantSubscription?> = _currentSubscription
 
-    private val _loading = MutableLiveData<Boolean>()
+    private val _loading = MutableLiveData<Boolean>(false)
     val loading: LiveData<Boolean> = _loading
 
-    private val _error = MutableLiveData<String?>()
+    private val _error = MutableLiveData<String?>(null)
     val error: LiveData<String?> = _error
 
     fun loadSubscriptionPlans(sessionId: String) {
@@ -38,25 +39,41 @@ class SubscriptionViewModel @Inject constructor(
             try {
                 // Load subscription plans
                 val plansResult = repository.getSubscriptionPlans(sessionId)
-                plansResult.onSuccess { plansList ->
-                    _plans.value = plansList
-                }.onFailure { throwable ->
-                    _error.value = "Failed to load plans: ${throwable.message}"
+
+                when (plansResult) {
+                    is Result.Success -> {
+                        _plans.value = plansResult.data ?: emptyList()
+                    }
+                    is Result.Failure -> {
+                        _error.value = "Failed to load plans: ${plansResult.exception.message}"
+                        _plans.value = emptyList()
+                    }
+                    Result.Loading -> {
+                        // Handle loading state if needed
+                    }
                 }
 
                 // Load current subscription
                 val tenantId = tenantManager.getCurrentTenantId()
                 if (tenantId > 0) {
                     val subscriptionResult = repository.getTenantSubscription(sessionId, tenantId)
-                    subscriptionResult.onSuccess { subscription ->
-                        _currentSubscription.value = subscription
-                    }.onFailure {
-                        // It's okay if no subscription exists
-                        _currentSubscription.value = null
+
+                    when (subscriptionResult) {
+                        is Result.Success -> {
+                            _currentSubscription.value = subscriptionResult.data
+                        }
+                        is Result.Failure -> {
+                            // It's okay if no subscription exists
+                            _currentSubscription.value = null
+                        }
+                        Result.Loading -> {
+                            // Handle loading state if needed
+                        }
                     }
                 }
             } catch (e: Exception) {
                 _error.value = "Error: ${e.message}"
+                _plans.value = emptyList()
             } finally {
                 _loading.value = false
             }

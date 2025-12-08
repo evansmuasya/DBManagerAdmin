@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lewvitec.shoppingadmin.databinding.ActivityProductsBinding
 import com.lewvitec.shoppingadmin.ui.products.ProductsAdapter
-import com.lewvitec.shoppingadmin.ui.products.edit.EditProductActivity
+import com.lewvitec.shoppingadmin.ui.products.EditProductActivity
 import com.lewvitec.shoppingadmin.utils.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

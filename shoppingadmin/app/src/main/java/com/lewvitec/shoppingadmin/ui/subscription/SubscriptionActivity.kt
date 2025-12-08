@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.lewvitec.shoppingadmin.databinding.ActivitySubscriptionBinding
-import com.lewvitec.shoppingadmin.databinding.ItemSubscriptionPlanBinding
 import com.lewvitec.shoppingadmin.models.SubscriptionPlan
 import com.lewvitec.shoppingadmin.models.TenantSubscription
 import com.lewvitec.shoppingadmin.ui.payment.PaymentActivity
@@ -80,9 +79,9 @@ class SubscriptionActivity : AppCompatActivity() {
     private fun setupObservers() {
         viewModel.plans.observe(this) { plans ->
             binding.swipeRefresh.isRefreshing = false
-            plansAdapter.submitList(plans)
+            plansAdapter.submitList(plans ?: emptyList())
 
-            if (plans.isEmpty()) {
+            if (plans.isNullOrEmpty()) {
                 binding.layoutEmpty.visibility = View.VISIBLE
                 binding.rvPlans.visibility = View.GONE
             } else {
@@ -96,8 +95,8 @@ class SubscriptionActivity : AppCompatActivity() {
         }
 
         viewModel.loading.observe(this) { isLoading ->
-            binding.swipeRefresh.isRefreshing = isLoading
-            binding.btnSubscribe.isEnabled = !isLoading
+            binding.swipeRefresh.isRefreshing = isLoading == true
+            binding.btnSubscribe.isEnabled = isLoading != true
         }
 
         viewModel.error.observe(this) { error ->

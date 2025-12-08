@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lewvitec.shoppingadmin.models.*
 import com.lewvitec.shoppingadmin.repository.AdminRepository
+import com.lewvitec.shoppingadmin.repository.Result
 import com.lewvitec.shoppingadmin.utils.PreferenceManager
 import com.lewvitec.shoppingadmin.utils.TenantManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,21 +22,25 @@ class PaymentViewModel @Inject constructor(
     private val preferenceManager: PreferenceManager
 ) : ViewModel() {
 
-    private val _paymentMethods = MutableLiveData<List<PaymentMethod>>()
+    private val _paymentMethods = MutableLiveData<List<PaymentMethod>>(emptyList())
     val paymentMethods: LiveData<List<PaymentMethod>> = _paymentMethods
 
-    private val _mpesaResponse = MutableLiveData<MpesaPaymentResponse>()
-    val mpesaResponse: LiveData<MpesaPaymentResponse> = _mpesaResponse
+    private val _mpesaResponse = MutableLiveData<MpesaPaymentResponse?>()
+    val mpesaResponse: LiveData<MpesaPaymentResponse?> = _mpesaResponse
 
-    private val _pesapalResponse = MutableLiveData<PesapalPaymentResponse>()
-    val pesapalResponse: LiveData<PesapalPaymentResponse> = _pesapalResponse
+    private val _pesapalResponse = MutableLiveData<PesapalPaymentResponse?>()
+    val pesapalResponse: LiveData<PesapalPaymentResponse?> = _pesapalResponse
 
-    private val _paymentStatus = MutableLiveData<String>()
-    val paymentStatus: LiveData<String> = _paymentStatus
+    private val _paymentStatus = MutableLiveData<String?>()
+    val paymentStatus: LiveData<String?> = _paymentStatus
 
-    private val _loading = MutableLiveData<Boolean>()
+    private val _loading = MutableLiveData<Boolean>(false)
     val loading: LiveData<Boolean> = _loading
 
+    private val _subscriptionStatus = MutableLiveData<PaymentStatusResponse?>()
+    val subscriptionStatus: LiveData<PaymentStatusResponse?> = _subscriptionStatus
+
+    private var subscriptionPollingJob: Job? = null
     private var pollingJob: Job? = null
 
     fun loadPaymentMethods(sessionId: String) {
@@ -43,11 +48,17 @@ class PaymentViewModel @Inject constructor(
             _loading.value = true
             try {
                 val result = repository.getPaymentMethods(sessionId)
-                result.onSuccess { methods ->
-                    _paymentMethods.value = methods
-                }.onFailure { error ->
-                    // Handle error
-                    _paymentMethods.value = emptyList()
+
+                when (result) {
+                    is Result.Success -> {
+                        _paymentMethods.value = result.data ?: emptyList()
+                    }
+                    is Result.Failure -> {
+                        _paymentMethods.value = emptyList()
+                    }
+                    Result.Loading -> {
+                        // Loading state handled by _loading
+                    }
                 }
             } finally {
                 _loading.value = false
@@ -60,13 +71,20 @@ class PaymentViewModel @Inject constructor(
             _loading.value = true
             try {
                 val result = repository.processMpesaPayment(sessionId, tenantId, planId, amount, phone)
-                result.onSuccess { response ->
-                    _mpesaResponse.value = response
-                }.onFailure { error ->
-                    _mpesaResponse.value = MpesaPaymentResponse(
-                        success = false,
-                        message = error.message ?: "Payment failed"
-                    )
+
+                when (result) {
+                    is Result.Success -> {
+                        _mpesaResponse.value = result.data
+                    }
+                    is Result.Failure -> {
+                        _mpesaResponse.value = MpesaPaymentResponse(
+                            success = false,
+                            message = result.exception.message ?: "Payment failed"
+                        )
+                    }
+                    Result.Loading -> {
+                        // Loading state handled by _loading
+                    }
                 }
             } finally {
                 _loading.value = false
@@ -74,18 +92,25 @@ class PaymentViewModel @Inject constructor(
         }
     }
 
-    fun initiatePesapalPayment(sessionId: String, tenantId: Int, planId: Int, amount: Double) {
+    fun initiatePesapalSubscription(sessionId: String, tenantId: Int, planId: Int, amount: Double) {
         viewModelScope.launch {
             _loading.value = true
             try {
-                val result = repository.processPesapalPayment(sessionId, tenantId, planId, amount)
-                result.onSuccess { response ->
-                    _pesapalResponse.value = response
-                }.onFailure { error ->
-                    _pesapalResponse.value = PesapalPaymentResponse(
-                        success = false,
-                        message = error.message ?: "Payment failed"
-                    )
+                val result = repository.processPesapalSubscription(sessionId, tenantId, planId, amount)
+
+                when (result) {
+                    is Result.Success -> {
+                        _pesapalResponse.value = result.data
+                    }
+                    is Result.Failure -> {
+                        _pesapalResponse.value = PesapalPaymentResponse(
+                            success = false,
+                            message = result.exception.message ?: "Subscription payment failed"
+                        )
+                    }
+                    Result.Loading -> {
+                        // Loading state handled by _loading
+                    }
                 }
             } finally {
                 _loading.value = false
@@ -105,18 +130,27 @@ class PaymentViewModel @Inject constructor(
                 val sessionId = preferenceManager.getSessionId()
                 val result = repository.checkMpesaPaymentStatus(sessionId, checkoutRequestId)
 
-                result.onSuccess { statusResponse ->
-                    when (statusResponse.status) {
-                        "completed" -> {
-                            _paymentStatus.value = "completed"
-                            pollingJob?.cancel()
-                            return@launch
+                when (result) {
+                    is Result.Success -> {
+                        val statusResponse = result.data
+                        when (statusResponse?.status) {
+                            "completed" -> {
+                                _paymentStatus.value = "completed"
+                                pollingJob?.cancel()
+                                return@launch
+                            }
+                            "failed" -> {
+                                _paymentStatus.value = "failed"
+                                pollingJob?.cancel()
+                                return@launch
+                            }
                         }
-                        "failed" -> {
-                            _paymentStatus.value = "failed"
-                            pollingJob?.cancel()
-                            return@launch
-                        }
+                    }
+                    is Result.Failure -> {
+                        // Log error but continue polling
+                    }
+                    Result.Loading -> {
+                        // Continue polling
                     }
                 }
 
@@ -134,8 +168,70 @@ class PaymentViewModel @Inject constructor(
         pollingJob?.cancel()
     }
 
+    fun startSubscriptionPolling(orderTrackingId: String, subscriptionId: Int) {
+        subscriptionPollingJob?.cancel()
+
+        subscriptionPollingJob = viewModelScope.launch {
+            var attempts = 0
+            while (attempts < 60) { // Poll for up to 10 minutes (60 * 10 seconds)
+                delay(10000) // Every 10 seconds
+
+                val sessionId = preferenceManager.getSessionId()
+                val result = repository.checkPesapalPaymentStatus(sessionId, orderTrackingId)
+
+                when (result) {
+                    is Result.Success -> {
+                        val statusResponse = result.data
+                        when (statusResponse?.status) {
+                            "completed" -> {
+                                _subscriptionStatus.value = statusResponse
+                                subscriptionPollingJob?.cancel()
+                                // Also update payment status for UI
+                                _paymentStatus.value = "completed"
+                                return@launch
+                            }
+                            "failed" -> {
+                                _subscriptionStatus.value = statusResponse
+                                subscriptionPollingJob?.cancel()
+                                _paymentStatus.value = "failed"
+                                return@launch
+                            }
+                        }
+                    }
+                    is Result.Failure -> {
+                        // Log error but continue polling
+                    }
+                    Result.Loading -> {
+                        // Continue polling
+                    }
+                }
+
+                attempts++
+
+                // Stop after 10 minutes
+                if (attempts >= 60) {
+                    _subscriptionStatus.value = PaymentStatusResponse(
+                        success = false,
+                        message = "Payment status check timeout",
+                        status = "timeout"
+                    )
+                    return@launch
+                }
+
+                if (subscriptionPollingJob?.isCancelled == true) {
+                    return@launch
+                }
+            }
+        }
+    }
+
+    fun stopSubscriptionPolling() {
+        subscriptionPollingJob?.cancel()
+    }
+
     override fun onCleared() {
         super.onCleared()
         pollingJob?.cancel()
+        subscriptionPollingJob?.cancel()
     }
 }

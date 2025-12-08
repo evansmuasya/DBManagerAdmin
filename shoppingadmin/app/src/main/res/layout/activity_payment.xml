@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/grey">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        tools:context=".ui.payment.PaymentActivity">
 
         <!-- Header -->
         <TextView
@@ -17,79 +20,101 @@
             android:text="Complete Payment"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginBottom="24dp"/>
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"
+            android:padding="8dp"/>
 
-        <!-- Plan Info -->
+        <!-- Plan Info Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="12dp">
+            android:layout_marginBottom="32dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="24dp">
 
                 <TextView
                     android:id="@+id/tvPlanName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Professional Plan"
-                    android:textSize="18sp"
-                    android:textStyle="bold"/>
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:gravity="center"/>
 
                 <TextView
                     android:id="@+id/tvAmount"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="KES 1,999.00"
-                    android:textSize="24sp"
+                    android:textSize="32sp"
                     android:textColor="@color/colorPrimary"
-                    android:layout_marginTop="8dp"/>
+                    android:gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="8dp"/>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Monthly subscription"
+                    android:textSize="14sp"
                     android:textColor="@color/gray"
-                    android:layout_marginTop="4dp"/>
+                    android:gravity="center"/>
+
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Payment Methods -->
+        <!-- Payment Methods Title -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Select Payment Method"
-            android:textSize="16sp"
+            android:textSize="18sp"
             android:textStyle="bold"
-            android:layout_marginBottom="16dp"/>
+            android:textColor="@color/black"
+            android:layout_marginBottom="16dp"
+            android:paddingStart="4dp"/>
 
-        <!-- M-Pesa Card -->
+        <!-- M-Pesa Payment Card - Entire card clickable -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardMpesa"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="8dp">
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:padding="20dp"
+                android:clickable="false"
+                android:focusable="false">
 
+                <!-- M-Pesa Icon -->
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:src="@drawable/ic_mpesa"
-                    android:layout_marginEnd="16dp"/>
+                    android:layout_marginEnd="20dp"
+                    android:contentDescription="M-Pesa"
+                    android:tint="@color/green"/>
 
+                <!-- Text Content -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -100,50 +125,63 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="M-Pesa"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Pay via M-Pesa STK Push"
                         android:textSize="14sp"
-                        android:textColor="@color/gray"/>
+                        android:textColor="@color/grey"
+                        android:layout_marginTop="4dp"/>
 
                 </LinearLayout>
 
-                <Button
-                    android:id="@+id/btnPayMpesa"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Pay"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                <!-- Arrow indicator (instead of button) -->
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_right"
+                    android:layout_gravity="center_vertical"
+                    android:contentDescription="Select"
+                    android:tint="@color/grey"/>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Pesapal Card -->
+        <!-- PesaPal Payment Card - Entire card clickable -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardPesapal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="16dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="8dp">
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:padding="20dp"
+                android:clickable="false"
+                android:focusable="false">
 
+                <!-- PesaPal Icon -->
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:src="@drawable/ic_pesapal"
-                    android:layout_marginEnd="16dp"/>
+                    android:layout_marginEnd="20dp"
+                    android:contentDescription="PesaPal"
+                    android:tint="@color/colorPrimary"/>
 
+                <!-- Text Content -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -153,50 +191,63 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Pesapal"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
+                        android:text="PesaPal"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Pay via Pesapal"
+                        android:text="Pay via PesaPal Gateway"
                         android:textSize="14sp"
-                        android:textColor="@color/gray"/>
+                        android:textColor="@color/grey"
+                        android:layout_marginTop="4dp"/>
 
                 </LinearLayout>
 
-                <Button
-                    android:id="@+id/btnPayPesapal"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Pay"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                <!-- Arrow indicator -->
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_right"
+                    android:layout_gravity="center_vertical"
+                    android:contentDescription="Select"
+                    android:tint="@color/gray"/>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card Payment Card -->
+        <!-- Card Payment Card - Entire card clickable -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardCard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
-            app:cardCornerRadius="8dp">
+            android:foreground="?android:attr/selectableItemBackground"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="16dp">
+                android:padding="20dp"
+                android:clickable="false"
+                android:focusable="false">
 
+                <!-- Credit Card Icon -->
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:src="@drawable/ic_credit_card"
-                    android:layout_marginEnd="16dp"/>
+                    android:layout_marginEnd="20dp"
+                    android:contentDescription="Credit Card"
+                    android:tint="@color/purple_700"/>
 
+                <!-- Text Content -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -207,27 +258,88 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Credit/Debit Card"
-                        android:textSize="16sp"
-                        android:textStyle="bold"/>
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Pay via Card"
+                        android:text="Pay with Visa/Mastercard"
                         android:textSize="14sp"
-                        android:textColor="@color/gray"/>
+                        android:textColor="@color/grey"
+                        android:layout_marginTop="4dp"/>
 
                 </LinearLayout>
 
-                <Button
-                    android:id="@+id/btnPayCard"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Pay"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+                <!-- Arrow indicator -->
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_arrow_right"
+                    android:layout_gravity="center_vertical"
+                    android:contentDescription="Select"
+                    android:tint="@color/grey"/>
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Test Button (Temporary - remove after testing) -->
+        <Button
+            android:id="@+id/btnTestPesapal"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="TEST PESAPAL (Debug Button)"
+            android:layout_marginTop="32dp"
+            android:backgroundTint="@color/colorPrimary"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"/>
+
+        <!-- Loading Progress (Optional) -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="24dp"
+            android:visibility="gone"/>
+
+        <!-- Payment Status Container -->
+        <LinearLayout
+            android:id="@+id/statusContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:padding="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/white"
+            android:backgroundTint="@color/light_grey"
+            app:cornerRadius="12dp">
+
+            <ImageView
+                android:id="@+id/statusIcon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginBottom="12dp"
+                android:src="@drawable/ic_check_circle"
+                android:contentDescription="Status Icon"
+                android:tint="@color/colorPrimary"/>
+
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:gravity="center"
+                android:paddingHorizontal="8dp"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>
