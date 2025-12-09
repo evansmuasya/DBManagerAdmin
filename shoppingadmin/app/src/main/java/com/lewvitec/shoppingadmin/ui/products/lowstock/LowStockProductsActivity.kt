@@ -10,9 +10,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.lewvitec.shoppingadmin.databinding.ActivityProductsBinding
-import com.lewvitec.shoppingadmin.ui.products.ProductsAdapter
 import com.lewvitec.shoppingadmin.ui.products.EditProductActivity
 import com.lewvitec.shoppingadmin.utils.PreferenceManager
+import com.lewvitec.shoppingadmin.utils.Constants
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -22,7 +22,7 @@ class LowStockProductsActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProductsBinding
     private val viewModel: LowStockProductsViewModel by viewModels()
     private lateinit var pref: PreferenceManager
-    private lateinit var adapter: ProductsAdapter
+    private lateinit var adapter: LowStockProductsAdapter
 
     @Inject
     lateinit var tenantManager: com.lewvitec.shoppingadmin.utils.TenantManager
@@ -54,16 +54,16 @@ class LowStockProductsActivity : AppCompatActivity() {
 
     private fun setupRecycler() {
         val tenantId = tenantManager.getCurrentTenantId()
-        adapter = ProductsAdapter(
+        adapter = LowStockProductsAdapter(
             onEdit = { product ->
                 val intent = Intent(this, EditProductActivity::class.java)
                 intent.putExtra("product_id", product.id)
                 startActivity(intent)
             },
-            onDelete = { product ->
+            onDelete = { product ->  // 🔥 ADD DELETE HANDLER
                 confirmDelete(product.id, product.productName)
             },
-            tenantId = tenantId // Add tenantId parameter
+            tenantId = tenantId
         )
 
         binding.recyclerViewProducts.layoutManager = LinearLayoutManager(this)
@@ -103,7 +103,7 @@ class LowStockProductsActivity : AppCompatActivity() {
         viewModel.loadLowStockProducts(pref.getSessionId())
     }
 
-    private fun confirmDelete(productId: Int, productName: String) {
+    private fun confirmDelete(productId: Int, productName: String) {  // 🔥 ADD DELETE CONFIRMATION
         AlertDialog.Builder(this)
             .setTitle("Delete Product")
             .setMessage("Are you sure you want to delete \"$productName\"? This action cannot be undone.")
